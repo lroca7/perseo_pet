@@ -1,66 +1,80 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import { Heart, Calendar, ShieldAlert, FileText } from 'lucide-react';
+import styles from './page.module.css';
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className={styles.container}>
+      <header className={styles.nav}>
+        <div className={styles.logo}>
+          <Heart size={24} fill="var(--primary)" />
+          <span>Perseo Pet</span>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className={styles.navButtons}>
+          <Link href="/login" className={styles.navLink}>
+            Iniciar Sesión
+          </Link>
+          <Link href="/register" className={styles.navButtonPrimary}>
+            Regístrate
+          </Link>
+        </div>
+      </header>
+
+      <main className={styles.heroSection}>
+        <div className={styles.heroContent}>
+          <h1 className={styles.title}>
+            El cuidado de tus mascotas *, <span className={styles.highlight}>en un solo lugar</span>
+          </h1>
+          <p className={styles.description}>
+            Lleva el registro completo de vacunas, desparasitaciones, citas médicas y tareas
+            diarias para tus mejores amigos. Recibe alertas y mantén su salud bajo control.
+          </p>
+          <div className={styles.ctas}>
+            <Link href="/register" className={styles.btnPrimary}>
+              Comenzar Gratis
+            </Link>
+            <Link href="/login" className={styles.btnSecondary}>
+              Ver mi Panel
+            </Link>
+          </div>
         </div>
       </main>
+
+      <section className={styles.featuresGrid}>
+        <div className={styles.featureCard}>
+          <div className={styles.featureIcon}>
+            <Calendar size={24} />
+          </div>
+          <h3 className={styles.featureTitle}>Línea de Tiempo</h3>
+          <p className={styles.featureDescription}>
+            Visualiza de forma cronológica el historial médico y de cuidados de cada una de tus mascotas.
+          </p>
+        </div>
+
+        <div className={styles.featureCard}>
+          <div className={styles.featureIcon}>
+            <ShieldAlert size={24} />
+          </div>
+          <h3 className={styles.featureTitle}>Alertas Inteligentes</h3>
+          <p className={styles.featureDescription}>
+            Recibe recordatorios automáticos de las próximas vacunas y visitas médicas para no saltarte nada.
+          </p>
+        </div>
+
+        <div className={styles.featureCard}>
+          <div className={styles.featureIcon}>
+            <FileText size={24} />
+          </div>
+          <h3 className={styles.featureTitle}>Registro Detallado</h3>
+          <p className={styles.featureDescription}>
+            Registra tratamientos, dosis, médicos veterinarios tratantes y añade anotaciones importantes.
+          </p>
+        </div>
+      </section>
+
+      <footer className={styles.footer}>
+        <p>&copy; {new Date().getFullYear()} Perseo Pet. Hecho con amor para los consentidos de la casa.</p>
+      </footer>
     </div>
   );
 }
