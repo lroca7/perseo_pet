@@ -1,7 +1,7 @@
 :root {
   /* Colors */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
+  --primary: #F15A24;
+  --primary-hover: #e76e41;
   --primary-light: #e0e7ff;
   --secondary: #14b8a6;
   --secondary-hover: #0d9488;
@@ -44,10 +44,10 @@
     --border-color: #222d44;
 
     --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --text-muted: #EEE6DE;
     --text-light: #64748b;
 
-    --primary-light: #1e1b4b;
+    --primary-light: #FFCF5D;
     --error-light: #450a0a;
     --success-light: #064e3b;
     --warning-light: #78350f;
