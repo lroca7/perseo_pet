@@ -2,20 +2,20 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
-import { 
-  Heart, 
-  Plus, 
-  LogOut, 
-  Dog, 
-  Cat, 
-  Bird, 
-  Rabbit, 
-  Trash2, 
-  Edit, 
-  X, 
-  Calendar, 
-  Scale, 
-  FileText, 
+import {
+  Heart,
+  Plus,
+  LogOut,
+  Dog,
+  Cat,
+  Bird,
+  Rabbit,
+  Trash2,
+  Edit,
+  X,
+  Calendar,
+  Scale,
+  FileText,
   AlertCircle
 } from 'lucide-react';
 import styles from './dashboard.module.css';
@@ -36,6 +36,15 @@ export default function DashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState('');
 
+  // Estados para vacunas
+  const [isModalOpenVaccine, setIsModalOpenVaccine] = useState(false);
+  const [isEditingVaccine, setIsEditingVaccine] = useState(false);
+  const [currentVaccineId, setCurrentVaccineId] = useState(null);
+  const [submittingVaccine, setSubmittingVaccine] = useState(false);
+  const [modalErrorVaccine, setModalErrorVaccine] = useState('');
+
+  const [vaccines, setVaccines] = useState([]);
+
   // Formulario reactivo
   const [formData, setFormData] = useState({
     name: '',
@@ -46,6 +55,12 @@ export default function DashboardPage() {
     weight: '',
     notes: '',
     newSpeciesName: '',
+  });
+
+  // Formulario reactivo vacunas
+  const [formDataVaccines, setFormDataVaccines] = useState({
+    name: '',
+    notes: ''
   });
 
   const [showNewSpeciesInput, setShowNewSpeciesInput] = useState(false);
@@ -72,6 +87,12 @@ export default function DashboardPage() {
       if (!speciesRes.ok) throw new Error('Error al obtener el catálogo de especies.');
       const speciesData = await speciesRes.json();
       setSpecies(speciesData);
+
+      // Cargar catálogo de vacunas
+      const vaccinesRes = await fetch('/api/vaccines');
+      if (!vaccinesRes.ok) throw new Error('Error al obtener el catálogo de vacunas.');
+      const vaccinesData = await vaccinesRes.json();
+      setVaccines(vaccinesData);
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error de conexión.');
@@ -283,6 +304,72 @@ export default function DashboardPage() {
     }
   };
 
+
+  const handleOpenAddModalVaccine = () => {
+    setFormDataVaccines({
+      name: '',
+      notes: ''
+    });
+    setIsEditingVaccine(false);
+    setCurrentVaccineId(null);
+    setModalErrorVaccine('');
+    setIsModalOpenVaccine(true);
+  };
+
+  const handleInputChangeVaccines = (e) => {
+    const { name, value } = e.target;
+    setFormDataVaccines((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCloseModalVaccine = () => {
+    setIsModalOpenVaccine(false);
+  };
+
+  const handleSubmitVaccine = async (e) => {
+    e.preventDefault();
+    setModalErrorVaccine('');
+    setSubmittingVaccine(true);
+
+    try {
+
+      let finalVaccineId = formDataVaccines.id || 'new';
+
+      // 1. Si se va a registrar una nueva vacuna primero
+      if (finalVaccineId === 'new') {
+        if (!formDataVaccines.name || formDataVaccines.name.trim() === '') {
+          throw new Error('Por favor, ingresa el nombre de la nueva vacuna.');
+        }
+
+        const vacRes = await fetch('/api/vaccines', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: formDataVaccines.name }),
+        });
+
+        const vacData = await vacRes.json();
+        if (!vacRes.ok) {
+          throw new Error(vacData.error || 'Error al registrar la nueva vacuna.');
+        }
+
+        finalVaccineId = vacData._id;
+
+        // Actualizar el catálogo local de vacunas
+        setVaccines((prev) => {
+          const exists = prev.some((v) => v._id === vacData._id);
+          if (exists) return prev;
+          return [vacData, ...prev];
+        });
+
+        setIsModalOpenVaccine(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error.message || 'No se pudo guardar la vacuna.');
+    } finally {
+      setSubmittingVaccine(false);
+    }
+  };
+
   // Renderizar estados de carga y errores del Dashboard principal
   if (status === 'loading') {
     return (
@@ -400,15 +487,15 @@ export default function DashboardPage() {
                 </div>
 
                 <footer className={styles.petCardFooter}>
-                  <button 
-                    onClick={() => handleOpenEditModal(pet)} 
+                  <button
+                    onClick={() => handleOpenEditModal(pet)}
                     className={`${styles.actionBtn} ${styles.editBtn}`}
                     title="Editar Mascota"
                   >
                     <Edit size={16} />
                   </button>
-                  <button 
-                    onClick={() => handleDeletePet(pet._id, pet.name)} 
+                  <button
+                    onClick={() => handleDeletePet(pet._id, pet.name)}
                     className={`${styles.actionBtn} ${styles.deleteBtn}`}
                     title="Eliminar Mascota"
                   >
@@ -419,6 +506,19 @@ export default function DashboardPage() {
             ))}
           </div>
         )}
+
+        {
+          <div className={styles.titleSection} style={{ marginTop: '2rem' }}>
+            <div>
+              <h1 className={styles.title}>Vacunas</h1>
+              <p className={styles.subtitle}>Gestion de vacunas</p>
+            </div>
+            <button onClick={handleOpenAddModalVaccine} className={styles.addPetBtn}>
+              <Plus size={16} />
+              Agregar Vacuna
+            </button>
+          </div>
+        }
       </main>
 
       {/* Modal de Crear / Editar */}
@@ -606,6 +706,130 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Modal Vacunas */}
+      {isModalOpenVaccine && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <header className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+                {isEditing ? 'Editar Vacuna' : 'Agregar Vacuna'}
+              </h2>
+              <button onClick={handleCloseModalVaccine} className={styles.closeBtn}>
+                <X size={20} />
+              </button>
+            </header>
+
+            {modalErrorVaccine && <div className={styles.errorMsg}>{modalErrorVaccine}</div>}
+
+            <form onSubmit={handleSubmitVaccine} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label htmlFor="name" className={styles.label}>Nombre de la vacuna</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formDataVaccines.name}
+                  onChange={handleInputChangeVaccines}
+                  placeholder="Ej. Rabia"
+                  className={styles.input}
+                  required
+                  disabled={submittingVaccine}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="notes" className={styles.label}>Notas adicionales</label>
+                <textarea
+                  id="notes"
+                  name="notes"
+                  value={formDataVaccines.notes}
+                  onChange={handleInputChangeVaccines}
+                  placeholder="Ej. Se administra cada 3 años"
+                  className={styles.textarea}
+                  rows="3"
+                  disabled={submittingVaccine}
+                />
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  onClick={handleCloseModalVaccine}
+                  className={styles.cancelBtn}
+                  disabled={submittingVaccine}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={submittingVaccine}
+                >
+                  {submittingVaccine ? 'Guardando...' : 'Guardar Vacuna'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+
+      {loading ? (
+        <div className={styles.loadingSpinner}>
+          <div className={styles.spinner}></div>
+          <p>Cargando vacunas...</p>
+        </div>
+      ) : vaccines.length === 0 ? (
+        /* Empty state */
+        <div className={styles.emptyState}>
+          <div style={{ backgroundColor: 'var(--primary-light)', padding: '1rem', borderRadius: '50%', color: 'var(--primary)' }}>
+            <Dog size={48} />
+          </div>
+          <h2 className={styles.emptyTitle}>No tienes vacunas registradas</h2>
+          <p className={styles.emptyDescription}>
+            Para comenzar a registrar vacunas, desparasitaciones o citas, primero agrega a tu mejor amigo.
+          </p>
+          <button onClick={handleOpenAddModal} className={styles.addPetBtn}>
+            <Plus size={16} />
+            Registrar mi primera mascota
+          </button>
+        </div>
+      ) : (
+        /* Grid de Mascotas */
+        <div className={styles.petGrid}>
+          {vaccines.map((vaccine) => (
+            <article key={vaccine._id} className={styles.petCard}>
+              <div>
+                <header className={styles.petCardHeader}>
+                  <div className={styles.petInfo}>
+                    <h3 className={styles.petName}>{vaccine.name}</h3>
+                  </div>
+                </header>
+
+              </div>
+
+              <footer className={styles.petCardFooter}>
+                <button
+                  onClick={() => handleOpenEditModal(vaccine)}
+                  className={`${styles.actionBtn} ${styles.editBtn}`}
+                  title="Editar vacuna"
+                >
+                  <Edit size={16} />
+                </button>
+                <button
+                  onClick={() => handleDeletePet(pet._id, pet.name)}
+                  className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                  title="Eliminar vacuna"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </footer>
+            </article>
+          ))}
+        </div>
+      )}
+
     </div>
   );
 }

@@ -65,3 +65,30 @@ Este documento detalla las historias de usuario necesarias para construir el MVP
 - [ ] El Dashboard debe escanear las actividades que tengan una "Fecha de próximo recordatorio" en un rango de los próximos 7 días o que ya estén vencidas.
 - [ ] Se debe mostrar una tarjeta de alerta con el nombre de la mascota, el tipo de actividad pendiente y los días restantes.
 - [ ] Debe haber una opción visual para marcar el recordatorio como "completado" o "realizado" (lo que creará un nuevo registro de actividad).
+
+---
+
+### HU6: Esquema de Vacunación de Mascotas
+**Como** dueño de mascotas  
+**Quiero** registrar y consultar el esquema de vacunación de cada una de mis mascotas por separado  
+**Para** mantener un registro detallado de las vacunas recibidas y programar las próximas dosis.
+
+#### Criterios de Aceptación:
+- [ ] Debe existir una pestaña o sección dedicada al "Esquema de Vacunación" en el detalle de cada mascota.
+- [ ] Formulario de creación y edición de vacuna con los campos: Nombre de la vacuna (ej. Antirrábica), Fecha de aplicación, Próxima dosis (opcional), Nombre del veterinario (opcional), Lote/Marca (opcional) y Notas (opcional).
+- [ ] Listado cronológico de vacunas aplicadas para la mascota.
+- [ ] Posibilidad de editar o eliminar cualquier registro de vacunación.
+
+---
+
+### HU7: Registro de Desparasitaciones de Mascotas
+**Como** dueño de mascotas  
+**Quiero** registrar y consultar el historial de desparasitaciones de cada mascota por separado (tanto internas como externas)  
+**Para** proteger la salud de mi mascota contra parásitos y saber cuándo toca la siguiente aplicación.
+
+#### Criterios de Aceptación:
+- [ ] Debe existir una pestaña o sección dedicada a "Desparasitaciones" en el detalle de la mascota.
+- [ ] Formulario de creación y edición de desparasitación con los campos: Tipo (Interna / Externa), Producto/Marca, Fecha de aplicación, Próxima aplicación (opcional), Peso al momento (opcional) y Notas (opcional).
+- [ ] Listado ordenado de las desparasitaciones realizadas.
+- [ ] Posibilidad de editar o eliminar cualquier registro de desparasitación.
+
