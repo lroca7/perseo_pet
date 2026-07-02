@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Heart,
   Plus,
@@ -12,6 +13,7 @@ import {
   Rabbit,
   Trash2,
   Edit,
+  Eye,
   X,
   Calendar,
   Scale,
@@ -446,7 +448,7 @@ export default function DashboardPage() {
           <div className={styles.petGrid}>
             {pets.map((pet) => (
               <article key={pet._id} className={styles.petCard}>
-                <div>
+                <Link href={`/dashboard/pets/${pet._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <header className={styles.petCardHeader}>
                     <div className={styles.petAvatar}>
                       {getSpeciesIcon(pet.species?.name)}
@@ -484,9 +486,16 @@ export default function DashboardPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </Link>
 
                 <footer className={styles.petCardFooter}>
+                  <Link
+                    href={`/dashboard/pets/${pet._id}`}
+                    className={`${styles.actionBtn} ${styles.editBtn}`}
+                    title="Ver Detalle"
+                  >
+                    <Eye size={16} />
+                  </Link>
                   <button
                     onClick={() => handleOpenEditModal(pet)}
                     className={`${styles.actionBtn} ${styles.editBtn}`}
