@@ -448,7 +448,7 @@ export default function DashboardPage() {
           <div className={styles.petGrid}>
             {pets.map((pet) => (
               <article key={pet._id} className={styles.petCard}>
-                <Link href={`/dashboard/pets/${pet._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link href={`/pets/${pet._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <header className={styles.petCardHeader}>
                     <div className={styles.petAvatar}>
                       {getSpeciesIcon(pet.species?.name)}
@@ -490,7 +490,7 @@ export default function DashboardPage() {
 
                 <footer className={styles.petCardFooter}>
                   <Link
-                    href={`/dashboard/pets/${pet._id}`}
+                    href={`/pets/${pet._id}`}
                     className={`${styles.actionBtn} ${styles.editBtn}`}
                     title="Ver Detalle"
                   >

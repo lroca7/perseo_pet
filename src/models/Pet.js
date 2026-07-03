@@ -42,6 +42,18 @@ const PetSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    // Aquí ocurre la relación Muchos a Muchos
+    vaccinesApplied: [
+      {
+        vaccineId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Vaccine', // Debe coincidir exactamente con el nombre del modelo Vaccine
+          required: true
+        },
+        appliedAt: { type: Date, default: Date.now },
+        lotNumber: String
+      }
+    ]
   },
   {
     timestamps: true,
