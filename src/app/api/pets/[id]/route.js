@@ -4,6 +4,7 @@ import dbConnect from '@/lib/mongodb';
 import Pet from '@/models/Pet';
 import Species from '@/models/Species';
 import Vaccines from '@/models/Vaccine';
+import ParasiteControl from '@/models/ParasiteControl';
 
 import { authOptions } from '../../auth/[...nextauth]/route';
 
@@ -49,7 +50,8 @@ export async function PUT(req, { params }) {
     const body = await req.json();
     const {
       name, species, breed, gender, birthDate, weight, notes,
-      vaccineId, appliedAt, lotNumber
+      vaccineId, appliedAt, lotNumber,
+      type, productName, durationMonths, isParasiteControl
     } = body;
 
     let updateData = {};
@@ -63,6 +65,25 @@ export async function PUT(req, { params }) {
             appliedAt: appliedAt ? new Date(appliedAt) : new Date(),
             lotNumber: lotNumber || ''
           }
+        }
+      };
+    }
+    // CASO 2: Viene del Modal de Antiparasitarios
+    else if (isParasiteControl) {
+      // 1. Primero creamos el registro de manera independiente en su propia colección
+      const newParasiteRecord = await ParasiteControl.create({
+        petId: id, // El ID de la mascota que viene de los params de la URL
+        type,
+        productName,
+        durationMonths,
+        appliedAt: appliedAt ? new Date(appliedAt) : new Date(),
+        notes: notes || ''
+      });
+
+      // 2. Preparamos el $push usando el _id del registro recién creado para meterselo a la mascota
+      updateData = {
+        $push: {
+          parasitesControl: newParasiteRecord._id
         }
       };
     }
@@ -114,7 +135,8 @@ export async function PUT(req, { params }) {
       { new: true, runValidators: true }
     )
       .populate('species')
-      .populate('vaccinesApplied.vaccineId');
+      .populate('vaccinesApplied.vaccineId')
+      .populate('parasitesControl');
 
     if (!updatedPet) {
       return NextResponse.json({ error: 'Mascota no encontrada o no tienes permisos.' }, { status: 404 });

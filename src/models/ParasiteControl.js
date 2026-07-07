@@ -17,4 +17,4 @@ const ParasiteControlSchema = new mongoose.Schema({
     notes: String
 }, { timestamps: true, });
 
-export { ParasiteControlSchema };
+export default mongoose.models.ParasiteControl || mongoose.model('ParasiteControl', ParasiteControlSchema);

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import styles from './petDetail.module.css';
 import CustomTable from '@/components/CustomTable/CustomTable';
+import ModalParasiteControl from './ModalParasiteControl';
 
 export default function PetDetailPage() {
   const { data: session, status } = useSession();
@@ -55,7 +56,6 @@ export default function PetDetailPage() {
   // Estados para vacunas
   const [isModalOpenVaccine, setIsModalOpenVaccine] = useState(false);
   const [isEditingVaccine, setIsEditingVaccine] = useState(false);
-  const [currentVaccineId, setCurrentVaccineId] = useState(null);
   const [submittingVaccine, setSubmittingVaccine] = useState(false);
   const [modalErrorVaccine, setModalErrorVaccine] = useState('');
 
@@ -68,10 +68,20 @@ export default function PetDetailPage() {
     }
   }, [status, params.id]);
 
+  /** Estados para vacunas */
   const [formDataVaccines, setFormDataVaccines] = useState({
     vaccineId: '', // Aquí guardaremos el ObjectId de la vacuna elegida
     appliedAt: new Date().toISOString().split('T')[0], // Fecha actual por defecto YYYY-MM-DD
     lotNumber: ''
+  });
+
+  /** Estados para control de parasitos */
+  const [formDataParasites, setFormDataParasites] = useState({
+    type: '',
+    productName: '',
+    durationMonths: 1,
+    appliedAt: new Date().toISOString().split('T')[0],
+    notes: ''
   });
 
   const fetchPetDetail = async () => {
@@ -291,7 +301,6 @@ export default function PetDetailPage() {
       lotNumber: ''
     });
     setIsEditingVaccine(false);
-    setCurrentVaccineId(null);
     setModalErrorVaccine('');
     setIsModalOpenVaccine(true);
   };
@@ -341,6 +350,31 @@ export default function PetDetailPage() {
 
   const handleDeleteVaccine = (id) => {
     console.log("Eliminar vacuna con ID:", id);
+  };
+
+  // Estado para controlar la apertura del modal antiparasitario
+  const [isParasiteModalOpen, setIsParasiteModalOpen] = useState(false);
+
+  const parasiteColumns = [
+    { header: 'Producto', key: 'productName', type: 'string' },
+    { header: 'Tipo', key: 'type', type: 'string' },
+    { header: 'Duración', key: 'durationMonths', type: 'number' },
+    { header: 'Fecha de Aplicación', key: 'appliedAt', type: 'date' }
+  ];
+
+  const handleOpenParasiteModal = () => {
+    setIsParasiteModalOpen(true);
+  }
+  // Función que se ejecuta cuando el modal guarda con éxito
+  const handleParasiteSuccess = (updatedPetData) => {
+    // Al hacer setPet con la nueva mascota devuelta por el backend,
+    // la CustomTable se actualizará sola instantáneamente.
+    setPet(updatedPetData);
+  };
+
+  const handleDeleteParasite = async (parasiteId) => {
+    // Aquí pones tu lógica futura para eliminar de la colección independiente
+    console.log("Eliminar registro id:", parasiteId);
   };
 
   // ===== Render states =====
@@ -519,7 +553,43 @@ export default function PetDetailPage() {
 
       </section>
 
+      {/* Sección Control parasitos */}
+      <section className={styles.vaccionesSection}>
+        <section className={styles.sectionTitle}>
+          <h2><Syringe size={18} />
+            Control parasitos
+          </h2>
+          <button
+            className={styles.addPetBtn}
 
+            onClick={handleOpenParasiteModal}
+          >
+            <Plus size={14} /> Aplicar Vacuna
+          </button>
+
+        </section>
+        <div className={styles.vaccinesContent}>
+
+          {!pet.parasitesControl || pet.parasitesControl.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+              <p style={{ margin: 0 }}>Esta mascota aún no tiene antiparasitarios registrados en su historial.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}> {/* Contenedor para hacer la tabla responsiva */}
+              <CustomTable
+                data={pet.parasitesControl}
+                columns={parasiteColumns}
+                onDelete={handleDeleteParasite}
+                emptyMessage="No hay vacunas registradas para esta mascota"
+              />
+            </div>
+          )}
+        </div>
+
+
+
+
+      </section>
 
       {/* Timestamps */}
       <section className={styles.timestampsSection}>
@@ -808,6 +878,13 @@ export default function PetDetailPage() {
           </div>
         </div>
       )}
+
+      <ModalParasiteControl
+        petId={pet._id}
+        isOpen={isParasiteModalOpen}
+        onClose={() => setIsParasiteModalOpen(false)}
+        onSuccess={handleParasiteSuccess} // Recibe la info actualizada
+      />
     </div>
   );
 }

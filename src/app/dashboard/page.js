@@ -70,7 +70,7 @@ export default function DashboardPage() {
       const petsData = await petsRes.json();
       setPets(petsData);
 
-      // Cargar catálogo de especies
+      // Cargar catálogo de especies      
       const speciesRes = await fetch('/api/species');
       if (!speciesRes.ok) throw new Error('Error al obtener el catálogo de especies.');
       const speciesData = await speciesRes.json();
