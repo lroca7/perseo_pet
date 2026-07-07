@@ -20,7 +20,10 @@ export async function GET(req, { params }) {
     }
 
     // Buscar mascota que pertenezca al usuario
-    const pet = await Pet.findOne({ _id: id, owner: session.user.id }).populate('species').populate('vaccinesApplied.vaccineId');
+    const pet = await Pet.findOne({ _id: id, owner: session.user.id })
+      .populate('species')
+      .populate('vaccinesApplied.vaccineId')
+      .populate('parasitesControl');
 
     if (!pet) {
       return NextResponse.json({ error: 'Mascota no encontrada.' }, { status: 404 });

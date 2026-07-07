@@ -60,7 +60,7 @@ export default function CustomTable({
             <thead>
                 <tr className={styles.thRow}>
                     {columns.map((col, index) => (
-                        <th key={index} className={styles.th}>
+                        <th key={`th-${col.key}-${index}`} className={styles.th}>
                             {col.header}
                         </th>
                     ))}
@@ -68,30 +68,33 @@ export default function CustomTable({
                 </tr>
             </thead>
             <tbody>
-                {data.map((item) => (
-                    <tr key={item._id} className={styles.dataRow}>
-                        {columns.map((col, index) => (
-                            <td key={index} className={styles.td}>
-                                {renderCellValue(item, col)}
-                            </td>
-                        ))}
+                {data.map((item, rowIndex) => {
+                    const rowId = item._id || `row-${rowIndex}`;
+                    return (
+                        <tr key={rowId} className={styles.dataRow}>
+                            {columns.map((col, colIndex) => (
+                                <td key={`cell-${rowId}-${col.key}-${colIndex}`} className={styles.td}>
+                                    {renderCellValue(item, col)}
+                                </td>
+                            ))}
 
-                        {onDelete && (
-                            <td className={styles.tdRight}>
-                                <button
-                                    className={styles.deleteBtn}
-                                    onClick={() => {
-                                        if (confirm('¿Deseas eliminar este registro?')) {
-                                            onDelete(item._id);
-                                        }
-                                    }}
-                                >
-                                    <Trash2 size={14} style={{ color: '#ef4444' }} />
-                                </button>
-                            </td>
-                        )}
-                    </tr>
-                ))}
+                            {onDelete && (
+                                <td className={styles.tdRight}>
+                                    <button
+                                        className={styles.deleteBtn}
+                                        onClick={() => {
+                                            if (confirm('¿Deseas eliminar este registro?')) {
+                                                onDelete(item._id);
+                                            }
+                                        }}
+                                    >
+                                        <Trash2 size={14} style={{ color: '#ef4444' }} />
+                                    </button>
+                                </td>
+                            )}
+                        </tr>
+                    )
+                })}
             </tbody>
         </table>
     );
