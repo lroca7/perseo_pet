@@ -19,7 +19,7 @@ export async function GET(req, { params }) {
     }
 
     // Buscar mascota que pertenezca al usuario
-    const pet = await Pet.findOne({ _id: id, owner: session.user.id }).populate('species');
+    const pet = await Pet.findOne({ _id: id, owner: session.user.id }).populate('species').populate('vaccinesApplied.vaccineId');
 
     if (!pet) {
       return NextResponse.json({ error: 'Mascota no encontrada.' }, { status: 404 });
@@ -30,72 +30,6 @@ export async function GET(req, { params }) {
     console.error('Error en GET /api/pets/[id]:', error);
     return NextResponse.json(
       { error: 'Ocurrió un error al obtener la mascota.' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT_OLD(req, { params }) {
-  try {
-    await dbConnect();
-    const { id } = await params;
-
-    // Validar sesión
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
-    }
-
-    const { name, species, breed, gender, birthDate, weight, notes } = await req.json();
-
-    // Validaciones básicas
-    if (!name || !species || !gender) {
-      return NextResponse.json(
-        { error: 'Por favor, completa todos los campos obligatorios (Nombre, Especie, Género).' },
-        { status: 400 }
-      );
-    }
-
-    if (!['macho', 'hembra'].includes(gender)) {
-      return NextResponse.json(
-        { error: 'El género debe ser macho o hembra.' },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que la especie exista
-    const speciesExists = await Species.findById(species);
-    if (!speciesExists) {
-      return NextResponse.json(
-        { error: 'La especie seleccionada no es válida.' },
-        { status: 400 }
-      );
-    }
-
-    // Buscar y actualizar si pertenece al dueño
-    const updatedPet = await Pet.findOneAndUpdate(
-      { _id: id, owner: session.user.id },
-      {
-        name,
-        species,
-        breed: breed || '',
-        gender,
-        birthDate: birthDate ? new Date(birthDate) : null,
-        weight: weight ? parseFloat(weight) : null,
-        notes: notes || '',
-      },
-      { new: true, runValidators: true }
-    ).populate('species');
-
-    if (!updatedPet) {
-      return NextResponse.json({ error: 'Mascota no encontrada o no tienes permisos.' }, { status: 404 });
-    }
-
-    return NextResponse.json(updatedPet);
-  } catch (error) {
-    console.error('Error en PUT /api/pets/[id]:', error);
-    return NextResponse.json(
-      { error: 'Ocurrió un error al actualizar la mascota.' },
       { status: 500 }
     );
   }

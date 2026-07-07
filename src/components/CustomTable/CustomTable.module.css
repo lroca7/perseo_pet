@@ -1,0 +1,88 @@
+.emptyContainer {
+    padding: 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.thRow {
+    border-bottom: 2px solid #e5e7eb;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.th {
+    padding: 10px 12px;
+}
+
+.thRight {
+    padding: 10px 12px;
+    text-align: right;
+}
+
+.dataRow {
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s ease;
+}
+
+/* Reemplaza de forma nativa los listeners de JavaScript */
+.dataRow:hover {
+    background-color: #7f8e9c;
+}
+
+.td {
+    padding: 12px;
+}
+
+.tdRight {
+    padding: 12px;
+    text-align: right;
+}
+
+.textMuted {
+    color: var(--text-muted);
+    ;
+    font-style: italic;
+}
+
+.textPrimary {
+    color: var(--text-primary-hover);
+}
+
+.textBold {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Estilos abstractos para los tipos de Badges */
+.badgeBlue {
+    font-size: 0.8rem;
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.badgeGreen {
+    font-size: 0.8rem;
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.deleteBtn {
+    padding: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}

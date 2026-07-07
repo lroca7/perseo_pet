@@ -23,6 +23,7 @@ import {
   Plus,
 } from 'lucide-react';
 import styles from './petDetail.module.css';
+import CustomTable from '@/components/CustomTable/CustomTable';
 
 export default function PetDetailPage() {
   const { data: session, status } = useSession();
@@ -111,8 +112,6 @@ export default function PetDetailPage() {
       console.error('Error al cargar especies:', err);
     }
   };
-
-
 
   // Helper para calcular la edad detallada
   const calculateAge = (birthDateString) => {
@@ -334,6 +333,16 @@ export default function PetDetailPage() {
     }
   };
 
+  const vaccineColumns = [
+    { header: 'Vacuna', key: 'vaccineId.name', type: 'string', isPrimary: true },
+    { header: 'Número de Lote', key: 'lotNumber', type: 'badge-blue' },
+    { header: 'Fecha de Aplicación', key: 'appliedAt', type: 'date' }
+  ];
+
+  const handleDeleteVaccine = (id) => {
+    console.log("Eliminar vacuna con ID:", id);
+  };
+
   // ===== Render states =====
   if (status === 'loading' || loading) {
     return (
@@ -495,63 +504,12 @@ export default function PetDetailPage() {
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}> {/* Contenedor para hacer la tabla responsiva */}
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid #e5e7eb', color: '#4b5563', fontWeight: '600' }}>
-                    <th style={{ padding: '10px 12px' }}>Vacuna</th>
-                    <th style={{ padding: '10px 12px' }}>Número de Lote</th>
-                    <th style={{ padding: '10px 12px' }}>Fecha de Aplicación</th>
-                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pet.vaccinesApplied.map((item) => (
-                    <tr
-                      key={item._id}
-                      style={{ borderBottom: '1px solid #f3f4f6', transition: 'background-color 0.2s' }}
-                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9fafb')}
-                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                    >
-                      {/* Nombre de la vacuna (obtenida mediante el populate del backend) */}
-                      <td style={{ padding: '12px', fontWeight: '500', color: '#111827' }}>
-                        {item.vaccineId?.name || 'Vacuna no especificada'}
-                      </td>
-
-                      {/* Número de Lote */}
-                      <td style={{ padding: '12px' }}>
-                        {item.lotNumber ? (
-                          <span style={{ fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>
-                            {item.lotNumber}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>Sin registrar</span>
-                        )}
-                      </td>
-
-                      {/* Fecha formateada */}
-                      <td style={{ padding: '12px', color: '#4b5563' }}>
-                        {new Date(item.appliedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </td>
-
-                      {/* Acciones por vacuna (opcional, por si quieres borrar o editar este registro clínico) */}
-                      <td style={{ padding: '12px', textAlign: 'right' }}>
-                        <button
-                          className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                          style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }}
-                          title="Eliminar del historial"
-                          onClick={() => {
-                            if (confirm('¿Deseas eliminar esta aplicación de vacuna del historial?')) {
-                              // Aquí agregarías tu lógica para eliminar el registro de la tabla intermedia
-                            }
-                          }}
-                        >
-                          <Trash2 size={14} style={{ color: '#ef4444' }} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <CustomTable
+                data={pet.vaccinesApplied}
+                columns={vaccineColumns}
+                onDelete={handleDeleteVaccine}
+                emptyMessage="No hay vacunas registradas para esta mascota"
+              />
             </div>
           )}
         </div>
@@ -560,6 +518,8 @@ export default function PetDetailPage() {
 
 
       </section>
+
+
 
       {/* Timestamps */}
       <section className={styles.timestampsSection}>
