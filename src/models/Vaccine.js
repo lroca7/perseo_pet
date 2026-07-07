@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const VaccinesSchema = new mongoose.Schema(
+const VaccineSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -20,4 +20,4 @@ const VaccinesSchema = new mongoose.Schema(
 );
 
 // Previene compilar el modelo más de una vez en Next.js hot reload
-export default mongoose.models.Vaccines || mongoose.model('Vaccines', VaccinesSchema);
+export default mongoose.models.Vaccine || mongoose.model('Vaccine', VaccineSchema);

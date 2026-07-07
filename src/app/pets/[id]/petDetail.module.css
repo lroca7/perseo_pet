@@ -282,7 +282,8 @@
 }
 
 /* ===== Notes Section ===== */
-.notesSection {
+.notesSection,
+.vaccionesSection {
   max-width: var(--max-width);
   width: 100%;
   margin: 0 auto 2rem;
@@ -298,12 +299,26 @@
   font-weight: 700;
   color: var(--text-main);
   margin-bottom: 0.75rem;
+
+  svg {
+    margin-right: 10px;
+  }
 }
 
 .notesContent {
   padding: 1.25rem;
   background-color: var(--surface);
   border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  border-left: 4px solid var(--primary);
+}
+
+.vaccinesContent {
+  padding: 1.25rem;
+  background-color: var(--surface);
   border-radius: var(--radius-lg);
   font-size: 0.95rem;
   line-height: 1.6;

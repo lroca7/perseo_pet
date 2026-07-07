@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
-import Vaccines from '@/models/Vaccines';
+import Vaccines from '@/models/Vaccine';
 import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET(req) {

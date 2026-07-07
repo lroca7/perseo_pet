@@ -47,11 +47,17 @@ const PetSchema = new mongoose.Schema(
       {
         vaccineId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Vaccine', // Debe coincidir exactamente con el nombre del modelo Vaccine
+          ref: 'Vaccine',
           required: true
         },
         appliedAt: { type: Date, default: Date.now },
         lotNumber: String
+      }
+    ],
+    parasitesControl: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ParasiteControl'
       }
     ]
   },

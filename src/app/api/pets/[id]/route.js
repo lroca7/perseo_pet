@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import dbConnect from '@/lib/mongodb';
 import Pet from '@/models/Pet';
 import Species from '@/models/Species';
+import Vaccines from '@/models/Vaccine';
+
 import { authOptions } from '../../auth/[...nextauth]/route';
 
 export async function GET(req, { params }) {
@@ -33,7 +35,7 @@ export async function GET(req, { params }) {
   }
 }
 
-export async function PUT(req, { params }) {
+export async function PUT_OLD(req, { params }) {
   try {
     await dbConnect();
     const { id } = await params;
@@ -99,6 +101,101 @@ export async function PUT(req, { params }) {
   }
 }
 
+export async function PUT(req, { params }) {
+  try {
+    await dbConnect();
+    const { id } = await params;
+    debugger
+    // Validar sesión
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const {
+      name, species, breed, gender, birthDate, weight, notes,
+      vaccineId, appliedAt, lotNumber
+    } = body;
+
+    let updateData = {};
+
+    // CASO 1: Se está vinculando una Vacuna (Viene del modal de vacunas)
+    if (vaccineId) {
+      updateData = {
+        $push: {
+          vaccinesApplied: {
+            vaccineId,
+            appliedAt: appliedAt ? new Date(appliedAt) : new Date(),
+            lotNumber: lotNumber || ''
+          }
+        }
+      };
+    }
+    // CASO 3: Actualización normal de la mascota
+    else {
+      // Validaciones básicas
+      if (!name || !species || !gender) {
+        return NextResponse.json(
+          { error: 'Por favor, completa todos los campos obligatorios (Nombre, Especie, Género).' },
+          { status: 400 }
+        );
+      }
+
+      if (!['macho', 'hembra'].includes(gender)) {
+        return NextResponse.json(
+          { error: 'El género debe ser macho o hembra.' },
+          { status: 400 }
+        );
+      }
+
+      // Verificar que la especie exista
+      const speciesExists = await Species.findById(species);
+      if (!speciesExists) {
+        return NextResponse.json(
+          { error: 'La especie seleccionada no es válida.' },
+          { status: 400 }
+        );
+      }
+
+      // Si pasa las validaciones, preparamos el objeto de actualización básico
+      updateData = {
+        name,
+        species,
+        breed: breed || '',
+        gender,
+        birthDate: birthDate ? new Date(birthDate) : null,
+        weight: weight ? parseFloat(weight) : null,
+        notes: notes || '',
+      };
+
+    }
+
+
+
+    // Buscar, actualizar y aplicar Populates correspondientes
+    const updatedPet = await Pet.findOneAndUpdate(
+      { _id: id, owner: session.user.id },
+      updateData,
+      { new: true, runValidators: true }
+    )
+      .populate('species')
+      .populate('vaccinesApplied.vaccineId');
+
+    if (!updatedPet) {
+      return NextResponse.json({ error: 'Mascota no encontrada o no tienes permisos.' }, { status: 404 });
+    }
+
+    return NextResponse.json(updatedPet);
+  } catch (error) {
+    console.error('Error en PUT /api/pets/[id]:', error);
+    return NextResponse.json(
+      { error: 'Ocurrió un error al actualizar la mascota.' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(req, { params }) {
   try {
     await dbConnect();
@@ -118,7 +215,7 @@ export async function DELETE(req, { params }) {
     }
 
     // TODO: Cuando exista la colección de actividades/historial, se deberían eliminar en cascada aquí.
-    
+
     return NextResponse.json({ message: 'Mascota eliminada con éxito.' });
   } catch (error) {
     console.error('Error en DELETE /api/pets/[id]:', error);

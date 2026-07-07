@@ -51,6 +51,15 @@ export default function PetDetailPage() {
     newSpeciesName: '',
   });
 
+  // Estados para vacunas
+  const [isModalOpenVaccine, setIsModalOpenVaccine] = useState(false);
+  const [isEditingVaccine, setIsEditingVaccine] = useState(false);
+  const [currentVaccineId, setCurrentVaccineId] = useState(null);
+  const [submittingVaccine, setSubmittingVaccine] = useState(false);
+  const [modalErrorVaccine, setModalErrorVaccine] = useState('');
+
+  const [availableVaccines, setAvailableVaccines] = useState([]);
+
   useEffect(() => {
     if (status === 'authenticated' && params.id) {
       fetchPetDetail();
@@ -58,17 +67,31 @@ export default function PetDetailPage() {
     }
   }, [status, params.id]);
 
+  const [formDataVaccines, setFormDataVaccines] = useState({
+    vaccineId: '', // Aquí guardaremos el ObjectId de la vacuna elegida
+    appliedAt: new Date().toISOString().split('T')[0], // Fecha actual por defecto YYYY-MM-DD
+    lotNumber: ''
+  });
+
   const fetchPetDetail = async () => {
     setLoading(true);
     setError('');
     try {
       const res = await fetch(`/api/pets/${params.id}`);
+
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Error al obtener la mascota.');
       }
       const petData = await res.json();
       setPet(petData);
+
+      // Cargar catálogo de vacunas
+      const vaccinesRes = await fetch('/api/vaccines');
+      if (!vaccinesRes.ok) throw new Error('Error al obtener el catálogo de vacunas.');
+      const vaccinesData = await vaccinesRes.json();
+      setAvailableVaccines(vaccinesData);
+
     } catch (err) {
       console.error(err);
       setError(err.message || 'Error de conexión.');
@@ -88,6 +111,8 @@ export default function PetDetailPage() {
       console.error('Error al cargar especies:', err);
     }
   };
+
+
 
   // Helper para calcular la edad detallada
   const calculateAge = (birthDateString) => {
@@ -259,6 +284,56 @@ export default function PetDetailPage() {
     }
   };
 
+
+  const handleOpenAddModalVaccine = () => {
+    setFormDataVaccines({
+      vaccineId: '',
+      appliedAt: new Date().toISOString().split('T')[0],
+      lotNumber: ''
+    });
+    setIsEditingVaccine(false);
+    setCurrentVaccineId(null);
+    setModalErrorVaccine('');
+    setIsModalOpenVaccine(true);
+  };
+
+  const handleInputChangeVaccines = (e) => {
+    const { name, value } = e.target;
+    setFormDataVaccines((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCloseModalVaccine = () => {
+    setIsModalOpenVaccine(false);
+  };
+
+  const handleSubmitVaccine = async (e) => {
+    e.preventDefault();
+    setModalErrorVaccine('');
+    setSubmittingVaccine(true);
+
+    try {
+      debugger
+      const res = await fetch(`/api/pets/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formDataVaccines),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al guardar la vacuna.');
+      }
+
+      setPet(data);
+      setIsModalOpenVaccine(false);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || 'No se pudo guardar la vacuna.');
+    } finally {
+      setSubmittingVaccine(false);
+    }
+  };
+
   // ===== Render states =====
   if (status === 'loading' || loading) {
     return (
@@ -396,6 +471,95 @@ export default function PetDetailPage() {
           </div>
         </section>
       )}
+
+      {/* Sección del Historial de Vacunación en formato de Tabla */}
+      <section className={styles.vaccionesSection}>
+        <section className={styles.sectionTitle}>
+          <h2><Syringe size={18} />
+            Historial de Vacunación
+          </h2>
+          <button
+            className={styles.addPetBtn}
+
+            onClick={handleOpenAddModalVaccine}
+          >
+            <Plus size={14} /> Aplicar Vacuna
+          </button>
+
+        </section>
+        <div className={styles.vaccinesContent}>
+
+          {!pet.vaccinesApplied || pet.vaccinesApplied.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+              <p style={{ margin: 0 }}>Esta mascota aún no tiene vacunas registradas en su historial.</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}> {/* Contenedor para hacer la tabla responsiva */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #e5e7eb', color: '#4b5563', fontWeight: '600' }}>
+                    <th style={{ padding: '10px 12px' }}>Vacuna</th>
+                    <th style={{ padding: '10px 12px' }}>Número de Lote</th>
+                    <th style={{ padding: '10px 12px' }}>Fecha de Aplicación</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right' }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pet.vaccinesApplied.map((item) => (
+                    <tr
+                      key={item._id}
+                      style={{ borderBottom: '1px solid #f3f4f6', transition: 'background-color 0.2s' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f9fafb')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      {/* Nombre de la vacuna (obtenida mediante el populate del backend) */}
+                      <td style={{ padding: '12px', fontWeight: '500', color: '#111827' }}>
+                        {item.vaccineId?.name || 'Vacuna no especificada'}
+                      </td>
+
+                      {/* Número de Lote */}
+                      <td style={{ padding: '12px' }}>
+                        {item.lotNumber ? (
+                          <span style={{ fontSize: '0.8rem', backgroundColor: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: '500' }}>
+                            {item.lotNumber}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>Sin registrar</span>
+                        )}
+                      </td>
+
+                      {/* Fecha formateada */}
+                      <td style={{ padding: '12px', color: '#4b5563' }}>
+                        {new Date(item.appliedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </td>
+
+                      {/* Acciones por vacuna (opcional, por si quieres borrar o editar este registro clínico) */}
+                      <td style={{ padding: '12px', textAlign: 'right' }}>
+                        <button
+                          className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                          style={{ padding: '4px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+                          title="Eliminar del historial"
+                          onClick={() => {
+                            if (confirm('¿Deseas eliminar esta aplicación de vacuna del historial?')) {
+                              // Aquí agregarías tu lógica para eliminar el registro de la tabla intermedia
+                            }
+                          }}
+                        >
+                          <Trash2 size={14} style={{ color: '#ef4444' }} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+
+
+
+      </section>
 
       {/* Timestamps */}
       <section className={styles.timestampsSection}>
@@ -588,6 +752,96 @@ export default function PetDetailPage() {
                   disabled={submitting}
                 >
                   {submitting ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Vacunas */}
+      {isModalOpenVaccine && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <header className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>
+                {isEditingVaccine ? 'Editar Aplicación de Vacuna' : 'Registrar Vacuna Aplicada'}
+              </h2>
+              <button onClick={handleCloseModalVaccine} className={styles.closeBtn}>
+                <X size={20} />
+              </button>
+            </header>
+
+            {modalErrorVaccine && <div className={styles.errorMsg}>{modalErrorVaccine}</div>}
+
+            <form onSubmit={handleSubmitVaccine} className={styles.form}>
+
+              {/* CAMBIO AQUÍ: Selección de la vacuna desde el catálogo */}
+              <div className={styles.formGroup}>
+                <label htmlFor="vaccineId" className={styles.label}>Selecciona la Vacuna</label>
+                <select
+                  id="vaccineId"
+                  name="vaccineId"
+                  value={formDataVaccines.vaccineId}
+                  onChange={handleInputChangeVaccines}
+                  className={styles.input}
+                  required
+                  disabled={submittingVaccine}
+                >
+                  <option value="" disabled>-- Selecciona una vacuna del catálogo --</option>
+                  {availableVaccines.map((vaccine) => (
+                    <option key={vaccine._id} value={vaccine._id}>
+                      {vaccine.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Campo: Fecha de Aplicación */}
+              <div className={styles.formGroup}>
+                <label htmlFor="appliedAt" className={styles.label}>Fecha de Aplicación</label>
+                <input
+                  type="date"
+                  id="appliedAt"
+                  name="appliedAt"
+                  value={formDataVaccines.appliedAt}
+                  onChange={handleInputChangeVaccines}
+                  className={styles.input}
+                  required
+                  disabled={submittingVaccine}
+                />
+              </div>
+
+              {/* Campo: Número de Lote */}
+              <div className={styles.formGroup}>
+                <label htmlFor="lotNumber" className={styles.label}>Número de Lote</label>
+                <input
+                  type="text"
+                  id="lotNumber"
+                  name="lotNumber"
+                  value={formDataVaccines.lotNumber}
+                  onChange={handleInputChangeVaccines}
+                  placeholder="Ej. LOT-12345 (Opcional)"
+                  className={styles.input}
+                  disabled={submittingVaccine}
+                />
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  onClick={handleCloseModalVaccine}
+                  className={styles.cancelBtn}
+                  disabled={submittingVaccine}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className={styles.submitBtn}
+                  disabled={submittingVaccine}
+                >
+                  {submittingVaccine ? 'Guardando...' : 'Guardar Vacuna'}
                 </button>
               </div>
             </form>
